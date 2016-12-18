@@ -54,7 +54,7 @@ const Mutation = gql`
     ): User
 
     signUpWithFacebook(
-      client_token: String
+      client_token: String!
     ): User
   }
 `;
