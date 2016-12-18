@@ -1,23 +1,24 @@
 # Accounts for Apollo (GraphQL)
 
+## Resolvers
+http://dev.apollodata.com/tools/graphql-tools/generate-schema.html#modularizing
 ```js
-import gql from 'graphql-tags';
-import { User } from 'apollo-accounts';
+import { User } from 'apollo-accounts/resolvers';
 import {
   Email,
   InputEmail,
   InputPassword,
   signUpWithPassword,
-} from 'apollo-accounts-password';
+} from 'apollo-accounts-password/resolvers';
 import {
   Facebook,
   signUpWithFacebook,
-} from 'apollo-accounts-facebook';
+} from 'apollo-accounts-facebook/resolvers';
 
 const resolveFunctions = {
   Query: {
     user(root, args, { userId }) {
-      return userId;
+      return { userId };
     },
   },
   Mutation: {
@@ -29,42 +30,41 @@ const resolveFunctions = {
   Facebook,
 };
 
-const typeDefs = `
-  type Facebook {
-    first_name
-    last_name
-    picture
-  }
-  
-  type Email {
-    address: String
-    verified: Boolean
-  }
-  
+```
+
+## Typedefs:
+```js
+import gql from 'graphql-tag';
+import { Email } from 'apollo-accounts-password/typedefs';
+import { Facebook } from 'apollo-accounts-facebook/typedefs';
+
+const User = gql`
   type User {
     _id: ID!
     emails: [Email]
     facebook: Facebook
-    twitter: Twitter
-  }
-  
-  type Query {
-    user: User
-  }
-  
-  scalar InputEmail
-  scalar InputPassword
-  
+  }
+`;
+
+const Mutation = gql`    
   mutation Mutation {
     signUpWithPassword(
       email: InputEmail!,
       password: InputPassword!
     ): User
+
+    signUpWithFacebook(
+      client_token: String
+    ): User
   }
-  
-  schema {
-    query: Query
-    mutation: Mutation
-  } 
 `;
+
+export default () => [
+  User,
+  Email,
+  Facebook,
+  InputEmail,
+  InputPassword,
+  Mutation,
+];
 ```
