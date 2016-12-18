@@ -59,12 +59,26 @@ const Mutation = gql`
   }
 `;
 
+const Query = gql`
+  type Query {
+    user: User
+  }
+`;
+
+const Schema = gql`
+schema {
+  query: Query
+  mutation: Mutation
+}`;
+
 export default () => [
   User,
   Email,
   Facebook,
   InputEmail,
   InputPassword,
+  Query,
   Mutation,
+  Schema,
 ];
 ```
