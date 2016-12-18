@@ -1,60 +1,127 @@
 # Accounts for Apollo (GraphQL)
 
 ## Resolvers
+
 http://dev.apollodata.com/tools/graphql-tools/generate-schema.html#modularizing
+
 ```js
-import { User } from 'apollo-accounts/resolvers';
+import uuid from 'uuid/v4';
 import {
-  Email,
-  InputEmail,
-  InputPassword,
+  resumeWithToken,
+  validateToken,
+} from 'apollo-accounts';
+import {
   signUpWithPassword,
-} from 'apollo-accounts-password/resolvers';
+  signInWithPassword,
+  validatePassword,
+} from 'apollo-accounts-password';
 import {
-  Facebook,
+  FacebookUser,
   signUpWithFacebook,
-} from 'apollo-accounts-facebook/resolvers';
+} from 'apollo-accounts-facebook';
 
 const resolveFunctions = {
   Query: {
-    user(root, args, { userId }) {
-      return { userId };
+    user(root, args, { user }) {
+      return user;
     },
   },
-  Mutation: {
-    signUpWithPassword,
-    signUpWithFacebook,
-  },
-  User,
-  Email,
-  Facebook,
-};
 
+  Mutation: {
+    signUpWithPassword(...args) {
+      const { email, services } = signUpWithPassword({ ...args });
+      // Store the user somewhere and save the service settings.
+      const user = {
+        _id: uuid,
+        services,
+        emails: [ email ],
+      };
+      Collection.insert(user);
+      return user;
+    },
+
+    signInWithPassword(...args) {
+      const { email, services } = signInWithPassword({ ...args });
+      const user = Collection.findOne({ email });
+      if (validatePassword({ user, ...args })) {
+        return user;
+      }
+    },
+
+    resumeWithToken(...args) {
+      const { services } = resumeWithToken({ ...args });
+      const user = Collection.findOne({ services });
+      if (validateToken({ user, ...args })) {
+        return user;
+      }
+    },
+
+    async signUpWithFacebook(...args) {
+      const {
+        services,
+        fields: {
+          first_name,
+          last_name,
+        },
+      } = await signUpWithFacebook({
+        ...args,
+        fields: {
+          first_name: 1,
+          last_name: 1,
+        },
+      });
+      // Store the user somewhere and save the service settings.
+      const user = {
+        _id: uuid(),
+        services,
+        first_name,
+        last_name,
+      };
+      Collection.insert(user);
+      return user;
+    },
+  },
+
+  User: {
+    emails: ({ emails }) => emails,
+    facebook: ({ userId, first_name, last_name }) => ({
+      userId, first_name, last_name,
+    }),
+  },
+
+  FacebookUser,
+};
 ```
 
-## Typedefs:
+## Typedefs
 ```js
 import gql from 'graphql-tag';
-import { Email } from 'apollo-accounts-password/typedefs';
-import { Facebook } from 'apollo-accounts-facebook/typedefs';
+import { Email } from 'apollo-accounts-password';
+import { FacebookUser } from 'apollo-accounts-facebook';
 
 const User = gql`
   type User {
     _id: ID!
     emails: [Email]
-    facebook: Facebook
+    facebook: FacebookUser
   }
 `;
 
-const Mutation = gql`    
+const Mutation = gql`
   mutation Mutation {
     signUpWithPassword(
-      email: InputEmail!,
-      password: InputPassword!
+      email: String!
+      password: String!
+    ): User
+
+    signInWithPassword(
+      email: String!
+      password: String!
     ): User
 
     signUpWithFacebook(
-      client_token: String!
+      accessToken: String!
+      expiresAt: String!
     ): User
   }
 `;
@@ -74,7 +141,7 @@ schema {
 export default () => [
   User,
   Email,
-  Facebook,
+  FacebookUser,
   InputEmail,
   InputPassword,
   Query,
@@ -82,3 +149,5 @@ export default () => [
   Schema,
 ];
 ```
+
+## Middlewares
