@@ -7,10 +7,6 @@ http://dev.apollodata.com/tools/graphql-tools/generate-schema.html#modularizing
 ```js
 import uuid from 'uuid/v4';
 import {
-  resumeWithToken,
-  validateToken,
-} from 'apollo-accounts';
-import {
   signUpWithPassword,
   signInWithPassword,
   validatePassword,
