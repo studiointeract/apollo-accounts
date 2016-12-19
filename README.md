@@ -1,8 +1,67 @@
 # Accounts for Apollo (GraphQL)
 
-## Resolvers
+## Typedefs
 
 http://dev.apollodata.com/tools/graphql-tools/generate-schema.html#modularizing
+
+```js
+import gql from 'graphql-tag';
+import { Email } from 'apollo-accounts-password/typedefs';
+import { Facebook } from 'apollo-accounts-facebook/typedefs';
+
+const User = gql`
+  type User {
+    _id: ID!
+    emails: [Email]
+    facebook: Facebook
+  }
+`;
+
+const Mutation = gql`
+  mutation Mutation {
+    signUpWithPassword(
+      email: String!
+      password: String!
+    ): User
+
+    signInWithPassword(
+      email: String!
+      password: String!
+    ): User
+
+    signUpWithFacebook(
+      accessToken: String!
+      expiresAt: String!
+    ): User
+  }
+`;
+
+const Query = gql`
+  type Query {
+    user: User
+  }
+`;
+
+const Schema = gql`
+schema {
+  query: Query
+  mutation: Mutation
+}`;
+
+export default () => [
+  User,
+  Email,
+  FacebookUser,
+  InputEmail,
+  InputPassword,
+  Query,
+  Mutation,
+  Schema,
+];
+```
+
+
+## Resolvers
 
 ```js
 import uuid from 'uuid/v4';
@@ -12,7 +71,7 @@ import {
   validatePassword,
 } from 'apollo-accounts-password';
 import {
-  FacebookUser,
+  Facebook,
   signUpWithFacebook,
 } from 'apollo-accounts-facebook';
 
@@ -81,61 +140,14 @@ const resolveFunctions = {
 };
 ```
 
-## Typedefs
-```js
-import gql from 'graphql-tag';
-import { Email } from 'apollo-accounts-password';
-import { FacebookUser } from 'apollo-accounts-facebook';
-
-const User = gql`
-  type User {
-    _id: ID!
-    emails: [Email]
-    facebook: FacebookUser
-  }
-`;
-
-const Mutation = gql`
-  mutation Mutation {
-    signUpWithPassword(
-      email: String!
-      password: String!
-    ): User
-
-    signInWithPassword(
-      email: String!
-      password: String!
-    ): User
-
-    signUpWithFacebook(
-      accessToken: String!
-      expiresAt: String!
-    ): User
-  }
-`;
-
-const Query = gql`
-  type Query {
-    user: User
-  }
-`;
-
-const Schema = gql`
-schema {
-  query: Query
-  mutation: Mutation
-}`;
-
-export default () => [
-  User,
-  Email,
-  FacebookUser,
-  InputEmail,
-  InputPassword,
-  Query,
-  Mutation,
-  Schema,
-];
-```
-
 ## Middlewares
+
+```js
+import {
+  resumeWithToken,
+  validateToken,
+} from 'apollo-accounts';
+
+
+
+```
