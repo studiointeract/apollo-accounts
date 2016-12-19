@@ -48,14 +48,6 @@ const resolveFunctions = {
       }
     },
 
-    resumeWithToken(...args) {
-      const { services } = resumeWithToken({ ...args });
-      const user = Collection.findOne({ services });
-      if (validateToken({ user, ...args })) {
-        return user;
-      }
-    },
-
     async signUpWithFacebook(...args) {
       const {
         services,
