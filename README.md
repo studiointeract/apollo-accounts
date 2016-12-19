@@ -51,7 +51,7 @@ schema {
 export default () => [
   User,
   Email,
-  FacebookUser,
+  Facebook,
   InputEmail,
   InputPassword,
   Query,
